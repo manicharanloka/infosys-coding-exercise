@@ -21,6 +21,7 @@ public class RewardsController {
     @GetMapping("/{customerId}")
     public ResponseEntity<Map<String, Object>> getRewardsForCustomer(@PathVariable Long customerId) {
         Map<String, Object> rewardsSummary = rewardsService.calculateRewardPointsForMonth(customerId, LocalDateTime.now().minusMonths(3), LocalDateTime.now());
+        if(rewardsSummary==null) return new ResponseEntity<>(null, HttpStatus.NOT_FOUND); //invalid customer or customer with no transactions
         return new ResponseEntity<>(rewardsSummary, HttpStatus.OK);
     }
 }

@@ -1,13 +1,12 @@
 package com.example.rewardsapi.service;
 
+import com.example.rewardsapi.entity.Transaction;
 import com.example.rewardsapi.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.rewardsapi.entity.Transaction;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,16 +18,17 @@ public class RewardsService {
 
     public Map<String, Object> calculateRewardPointsForMonth(Long customerId, LocalDateTime startDate, LocalDateTime endDate) {
         List<Transaction> transactionList = transactionRepository.findAllByCustomerIdAndDateOfTransactionBetween(customerId, startDate, endDate);
-        Map<String, Integer> monthlyPoints = new HashMap<>();
+        if(transactionList.isEmpty()) return null;
+        Map<String, Integer> monthlyPoints = new LinkedHashMap<>(); // for storing monthly points
         int totalPoints=0;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM-yyyy");
         for(Transaction transaction: transactionList) {
             int points = calculatePoints(transaction.getAmount());
             totalPoints+=points;
             String month = transaction.getDateOfTransaction().format(formatter);
-            monthlyPoints.merge(month, points, Integer::sum);
+            monthlyPoints.merge(month, points, Integer::sum); // updates points
         }
-        Map<String, Object> rewardsSummary = new LinkedHashMap<>();
+        Map<String, Object> rewardsSummary = new LinkedHashMap<>(); // for storing monthly and total points
         rewardsSummary.put("monthlyPoints", monthlyPoints);
         rewardsSummary.put("totalPoints", totalPoints);
         return rewardsSummary;
